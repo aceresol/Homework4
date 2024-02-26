@@ -1,97 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Search Guitar</title>
 </head>
 <body>
-    <div class="container">
-        <a href="index.html">Guitar Inventory Management</a>
-        <a href="add.html">Add Guitar</a>
-        <a href="search.html">Search</a>
-    </div>
-    <label>Builder:</label>
-    <input id = "builder"/>
-    <label>Model:</label>
-    <input id = "model"/>
-    <label>Type:</label>
-    <input id = "type"/>
-    <label>Back Wood:</label>
-    <input id = "backWood"/>
-    <label>Top Wood:</label>
-    <input id = "topWood"/>
+    <h2>Search Guitars</h2>
+    Builder: <input type="text" id="searchBuilder"><br>
+    Model: <input type="text" id="searchModel"><br>
+    Type: <input type="text" id="searchType"><br>
+    Back Wood: <input type="text" id="searchBackWood"><br>
+    Top Wood: <input type="text" id="searchTopWood"><br>
+    <button onclick="searchGuitar()">Search</button>
+    <button onclick="window.location.href='index.html'">Back to Home</button>
 
-    <button onclick="search()">Search</button>
-    <br />
-
-    <table>
-        <thead>
-            <tr>
-                <th>Serial Number</th>
-                <th>Builder</th>
-                <th>Model</th>
-                <th>Type</th>
-                <th>Back Wood</th>
-                <th>Top Wood</th>
-            </tr>
-        </thead>
-        <tbody id="searchResult">
-            
-        </tbody>
+    <table id="resultsTable" border="1">
+        <tr>
+            <th>Serial Number</th>
+            <th>Price</th>
+            <th>Builder</th>
+            <th>Model</th>
+            <th>Type</th>
+            <th>Back Wood</th>
+            <th>Top Wood</th>
+        </tr>
     </table>
 
     <script>
-        let guitars = [
-            {serialNumber : "1", builder : "Gibson", model : "abc1", type : "Electric", backWood : "Cedar", topWood : "Cedar"},
-            {serialNumber : "2", builder : "Fender", model : "abc2", type : "Acoustic", backWood : "Maple", topWood : "Alder"},
-            {serialNumber : "3", builder : "Fender", model : "abc3", type : "Electric", backWood : "Alder", topWood : "Sitka"},
-            {serialNumber : "4", builder : "Gibson", model : "abc4", type : "Acoustic", backWood : "Cedar", topWood : "Cocobolo"},
-            {serialNumber : "5", builder : "Martin", model : "abc5", type : "Acoustic", backWood : "Sitka", topWood : "Maple"},
-        ];
-        function search(){
-            let inputBuilder = document.getElementById("builder").value.toLowerCase();
-            let inputModel = document.getElementById("model").value.toLowerCase();
-            let inputType = document.getElementById("type").value.toLowerCase();
-            let inputBackWood = document.getElementById("backWood").value.toLowerCase();
-            let inputTopWood = document.getElementById("topWood").value.toLowerCase();
-            let table = document.getElementById("searchResult");
-            table.innerHTML = "";
-            for(let guitar of guitars){
-                if((!inputBuilder || guitar.builder.toLowerCase() == inputBuilder) && (!inputModel || guitar.model.toLowerCase() == inputModel)
-                && (!inputType || guitar.type.toLowerCase() == inputType) && (!inputBackWood || guitar.backWood.toLowerCase() == inputBackWood)
-                && (!inputTopWood || guitar.topWood.toLowerCase() == inputTopWood)){
-                    let row = document.createElement("tr");
-                    let cell1 = document.createElement("td");
-                    let cell2 = document.createElement("td");
-                    let cell3 = document.createElement("td");
-                    let cell4 = document.createElement("td");
-                    let cell5 = document.createElement("td");
-                    let cell6 = document.createElement("td");
-                    let serialNumber = document.createTextNode(guitar.serialNumber);
-                    let builder = document.createTextNode(guitar.builder);
-                    let model = document.createTextNode(guitar.model);
-                    let type = document.createTextNode(guitar.type);
-                    let backWood = document.createTextNode(guitar.backWood);
-                    let topWood = document.createTextNode(guitar.topWood);
+        async function fetchGuitars() {
 
-                    cell1.appendChild(serialNumber);
-                    cell2.appendChild(builder);
-                    cell3.appendChild(model);
-                    cell4.appendChild(type);
-                    cell5.appendChild(backWood);
-                    cell6.appendChild(topWood);
+            const builderValue = document.getElementById('searchBuilder').value;
+            const modelValue = document.getElementById('searchModel').value;
+            const typeValue = document.getElementById('searchType').value;
+            const backWoodValue = document.getElementById('searchBackWood').value;
+            const topWoodValue = document.getElementById('searchTopWood').value;
 
-                    row.appendChild(cell1);
-                    row.appendChild(cell2);
-                    row.appendChild(cell3);
-                    row.appendChild(cell4);
-                    row.appendChild(cell5);
-                    row.appendChild(cell6);
+            const queryParams = new URLSearchParams();
 
-                    table.appendChild(row);
+            if (builderValue) queryParams.append('builder', builderValue.toUpperCase());
+            if (modelValue) queryParams.append('model', modelValue); 
+            if (typeValue) queryParams.append('type', typeValue.toUpperCase());
+            if (backWoodValue) queryParams.append('backWood', backWoodValue.toUpperCase());
+            if (topWoodValue) queryParams.append('topWood', topWoodValue.toUpperCase());
+            try {
+                const response = await fetch(`http://localhost:8080/search?${queryParams}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const guitars = await response.json();
+                return guitars;
+            } catch (error) {
+                console.error('Could not fetch guitars:', error);
+                return [];
             }
+        }
+
+        async function searchGuitar() {
+            const guitars = await fetchGuitars();
+
+            const resultsTable = document.getElementById('resultsTable');
+            resultsTable.innerHTML = resultsTable.rows[0].outerHTML; // Clear previous search results
+
+            guitars.forEach(guitar => {
+                const row = resultsTable.insertRow(-1);
+                Object.values(guitar).forEach(text => {
+                    const cell = row.insertCell(-1);
+                    cell.textContent = text;
+                });
+            });
         }
     </script>
 </body>
