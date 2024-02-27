@@ -1,106 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div id="add">
-            <div>
-                <button onclick="homeScreen()">Guitar Inventory Management</button>
-                <button onclick="aboutScreen()">About</button>
-                <button onclick="addScreen()">Add</button>
-                <button onclick="searchScreen()">Search</button>
-            </div>
-            <div>
-                <label>Serial Number:</label>
-                <input id="serialNumber"><br>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add a guitar</title>
+    <style>
+        
+    </style>
+  </head>
+  <body>
+    <div >
+        <h2 >
+            <a href="index.html">Guitar Management</a>
+        </h2>
+        <h2 >
+            <a href="add.html">Add</a>
+        </h2>
+        <h2>
+            <a href="search.html">Search</a>
+        </h2>
+    </div>
 
-                <label>Price:</label>
-                <input id="price"><br>
+    <div style="padding-top: 140px"></div>
 
-                <label>Builder:</label>
-                <input id="builder"><br>
-
-                <label>Model:</label>
-                <input id="model"><br>
-
-                <label>Type:</label>
-                <input id="type"><br>
-
-                <label>Back Wood:</label>
-                <input id="backWood"><br>
-
-                <label>Top Wood:</label>
-                <input id="topWood"><br>
-
-                <button onclick="addGuitar()">Add Guitar</button>
-            </div>
+    <div>
+        <div class="center">
+            <h1>Add Guitar</h1>
         </div>
-        <script>
-            function homeScreen() {
-                document.getElementById("home").style.display = "block";
-                document.getElementById("about").style.display = "none";
-                document.getElementById("add").style.display = "none";
-                document.getElementById("search").style.display = "none";
-            }
+        <div class="center">
+            <label>Serial Number:</label>
+            <input id="serial" />
+        </div>
+        <div class="center">
+            <label>Price:</label>
+            <input id="price" />
+        </div>
+        <div class="center">
+            <label>Builder:</label>
+            <input id="builder" />
+        </div>
+        <div class="center">
+            <label>Model:</label>
+            <input id="model" />
+        </div>
+        <div class="center">
+            <label>Type:</label>
+            <input id="type" />
+        </div>
+        <div class="center">
+            <label>Top wood:</label>
+            <input id="topWood" />
+        </div>
+        <div class="center">
+            <label>Back wood:</label>
+            <input id="backWood" />
+        </div>
+    </div>
+    <div style="padding-top: 20px"></div>
+    <div class="center">
+        <div>
+            <button onclick="addGuitar()">Add Guitar</button>
+        </div>
+    </div>
+    <script>
+      let host = "http://localhost:8080";
 
-            function aboutScreen() {
-                window.location.href = "index.html";
-            }
-
-            function addScreen() {
-                window.location.href = "add.html";
-            }
-
-            function searchScreen() {
-                window.location.href = "search.html";
-            }
-
-            async function addGuitar() {
-                var serialNumber = document.getElementById("serialNumber").value;
-                var price = document.getElementById("price").value;
-                var builder = document.getElementById("builder").value;
-                var model = document.getElementById("model").value;
-                var type = document.getElementById("type").value;
-                var backWood = document.getElementById("backWood").value;
-                var topWood = document.getElementById("topWood").value;
-
-                if (!serialNumber || !price || !builder || !model || !type || !backWood || !topWood) {
-                    alert("Pleae make sure to fill in every field.");
-                    return;
-                }
-
-                var guitar = {
-                    "serialNumber": serialNumber,
-                    "price": price,
-                    "builder": builder,
-                    "model": model,
-                    "type": type,
-                    "backWood": backWood,
-                    "topWood": topWood
-                };
-                
-
-                fetch('http://localhost:8080/inventory', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(guitar),
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        alert('Something went wrong. Please try again or contact the customer support team.');
-                    } else {
-                        alert('The guitar was added to the system.')
-                    }
-                    return response.json();
-                })
-                .catch(error => {
-                    alert('Error: ' + error.message);
-                });
-            }
-        </script>
-    </body>
+      async function addGuitar() {
+        let message = "";
+        let guitarSerial = document.getElementById("serial").value;
+        let guitarPrice = document.getElementById("price").value;
+        let guitarBuilder = document.getElementById("builder").value;
+        let guitarModel = document.getElementById("model").value;
+        let guitarType = document.getElementById("type").value;
+        let guitarBack = document.getElementById("backWood").value;
+        let guitarFront = document.getElementById("topWood").value;
+        
+        
+        let Guitar = {serialNumber: guitarSerial, price: guitarPrice, builder: guitarBuilder,
+                     model: guitarModel, type: guitarType, backWood: guitarBack, topWood: guitarFront};
+        console.log("You entered:" + JSON.stringify(Guitar));
+        alert("You entered:" + JSON.stringify(Guitar));
+        let request = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(Guitar)
+        };
+        let response = await fetch(host + "/inventory/add", request);
+        if(response.status == 200) {
+        if (result) {
+            message = "The Guitar was added successfully!";
+        } else {
+            console.log(response);
+            message = "Something went wrong! Guitar data could not be saved.";
+        }
+        alert(message);
+      }
+    }
+    </script>
+  </body>
 </html>
